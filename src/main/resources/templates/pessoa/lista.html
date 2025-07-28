@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Pessoas</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<!-- Menu de Navegação -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">Portfólio de Projetos</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/projetos">Projetos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="/pessoas">Pessoas</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <h1>Pessoas</h1>
+    
+    <!-- Mensagens de erro -->
+    <div th:if="${erro}" class="alert alert-danger" role="alert">
+        <span th:text="${erro}"></span>
+    </div>
+    
+    <!-- Mensagens de sucesso -->
+    <div th:if="${sucesso}" class="alert alert-success" role="alert">
+        <span th:text="${sucesso}"></span>
+    </div>
+    
+    <a href="/pessoas/novo" class="btn btn-primary mb-3">Nova Pessoa</a>
+    <table class="table table-bordered table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>CPF</th>
+            <th>Data Nascimento</th>
+            <th>Funcionário</th>
+            <th>Gerente</th>
+            <th>Ações</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="pessoa : ${pessoas}">
+            <td th:text="${pessoa.id}"></td>
+            <td th:text="${pessoa.nome}"></td>
+            <td th:text="${pessoa.cpf}"></td>
+            <td th:text="${pessoa.datanascimento}"></td>
+            <td>
+                <span th:if="${pessoa.funcionario}" class="badge bg-success">Sim</span>
+                <span th:unless="${pessoa.funcionario}" class="badge bg-secondary">Não</span>
+            </td>
+            <td>
+                <span th:if="${pessoa.gerente}" class="badge bg-primary">Sim</span>
+                <span th:unless="${pessoa.gerente}" class="badge bg-secondary">Não</span>
+            </td>
+            <td>
+                <a th:href="@{/pessoas/editar/{id}(id=${pessoa.id})}" class="btn btn-sm btn-warning">Editar</a>
+                <a th:href="@{/pessoas/excluir/{id}(id=${pessoa.id})}" class="btn btn-sm btn-danger" 
+                   onclick="return confirm('Tem certeza que deseja excluir?')">Excluir</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
