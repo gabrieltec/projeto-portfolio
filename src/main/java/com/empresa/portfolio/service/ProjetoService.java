@@ -13,12 +13,14 @@ public class ProjetoService {
     @Autowired
     private ProjetoRepository projetoRepository;
 
+    @Transactional(readOnly = true)
     public List<Projeto> listarTodos() {
-        return projetoRepository.findAll();
+        return projetoRepository.findAllWithGerente();
     }
 
+    @Transactional(readOnly = true)
     public Optional<Projeto> buscarPorId(Long id) {
-        return projetoRepository.findById(id);
+        return projetoRepository.findByIdWithGerente(id);
     }
 
     @Transactional

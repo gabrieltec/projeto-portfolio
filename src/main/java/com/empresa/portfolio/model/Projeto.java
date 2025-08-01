@@ -1,5 +1,6 @@
 package com.empresa.portfolio.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -43,5 +44,6 @@ public class Projeto {
     @NotNull(message = "Gerente é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idgerente", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Pessoa gerente;
 } 

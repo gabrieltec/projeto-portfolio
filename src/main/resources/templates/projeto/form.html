@@ -3,6 +3,8 @@
 <head>
     <title>Projeto</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 </head>
 <body>
 <!-- Menu de Navegação -->
@@ -17,9 +19,9 @@
                 <li class="nav-item">
                     <a class="nav-link active" href="/projetos">Projetos</a>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link" href="/pessoas">Pessoas</a>
-                </li>
+                </li> -->
             </ul>
         </div>
     </div>
@@ -38,7 +40,7 @@
         <span th:text="${sucesso}"></span>
     </div>
     
-    <form method="post" th:action="${projeto.id == null ? '/projetos' : '/projetos/atualizar/' + projeto.id}">
+    <form method="post" th:action="${projeto.id == null ? '/projetos' : '/projetos/atualizar/' + projeto.id}" id="projetoForm">
         <div class="mb-3">
             <label for="nome" class="form-label">Nome *</label>
             <input type="text" class="form-control" id="nome" name="nome" th:value="${projeto.nome}" required>
@@ -46,18 +48,30 @@
         <div class="mb-3">
             <label for="dataInicio" class="form-label">Data de Início</label>
             <input type="date" class="form-control" id="dataInicio" name="dataInicio" th:value="${projeto.dataInicio}">
+            <div class="invalid-feedback" id="dataInicioError">
+                Data de início não pode ser maior que a data de término
+            </div>
         </div>
         <div class="mb-3">
             <label for="dataPrevisaoFim" class="form-label">Previsão de Término</label>
             <input type="date" class="form-control" id="dataPrevisaoFim" name="dataPrevisaoFim" th:value="${projeto.dataPrevisaoFim}">
+            <div class="invalid-feedback" id="dataPrevisaoError">
+                Data de previsão deve ser maior que a data de início
+            </div>
         </div>
         <div class="mb-3">
             <label for="dataFim" class="form-label">Data Real de Término</label>
             <input type="date" class="form-control" id="dataFim" name="dataFim" th:value="${projeto.dataFim}">
+            <div class="invalid-feedback" id="dataFimError">
+                Data de término deve ser maior que a data de início
+            </div>
         </div>
         <div class="mb-3">
             <label for="orcamento" class="form-label">Orçamento Total</label>
-            <input type="number" step="0.01" class="form-control" id="orcamento" name="orcamento" th:value="${projeto.orcamento}">
+            <div class="input-group">
+                <span class="input-group-text">R$</span>
+                <input type="text" class="form-control" id="orcamento" name="orcamento" th:value="${projeto.orcamento}" placeholder="0,00">
+            </div>
         </div>
         <div class="mb-3">
             <label for="descricao" class="form-label">Descrição</label>
@@ -104,5 +118,96 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Máscara monetária para orçamento
+    $('#orcamento').mask('#.##0,00', {reverse: true});
+    
+    // Função para validar datas
+    function validarDatas() {
+        var dataInicio = $('#dataInicio').val();
+        var dataPrevisaoFim = $('#dataPrevisaoFim').val();
+        var dataFim = $('#dataFim').val();
+        
+        var temErro = false;
+        
+        // Limpar erros anteriores
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').hide();
+        
+        // Validar data de início vs previsão de fim
+        if (dataInicio && dataPrevisaoFim) {
+            var inicio = new Date(dataInicio);
+            var previsao = new Date(dataPrevisaoFim);
+            
+            if (inicio >= previsao) {
+                $('#dataInicio').addClass('is-invalid');
+                $('#dataInicioError').show();
+                temErro = true;
+            }
+        }
+        
+        // Validar data de início vs data real de fim
+        if (dataInicio && dataFim) {
+            var inicio = new Date(dataInicio);
+            var fim = new Date(dataFim);
+            
+            if (inicio >= fim) {
+                $('#dataInicio').addClass('is-invalid');
+                $('#dataInicioError').show();
+                temErro = true;
+            }
+        }
+        
+        // Validar previsão vs data real
+        if (dataPrevisaoFim && dataFim) {
+            var previsao = new Date(dataPrevisaoFim);
+            var fim = new Date(dataFim);
+            
+            if (previsao > fim) {
+                $('#dataPrevisaoFim').addClass('is-invalid');
+                $('#dataPrevisaoError').show();
+                temErro = true;
+            }
+        }
+        
+        return !temErro;
+    }
+    
+    // Validar datas quando qualquer campo de data for alterado
+    $('#dataInicio, #dataPrevisaoFim, #dataFim').on('change', function() {
+        validarDatas();
+    });
+    
+    // Validação do formulário antes de enviar
+    $('#projetoForm').on('submit', function(e) {
+        if (!validarDatas()) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Converter valor monetário para formato adequado antes de enviar
+        var orcamento = $('#orcamento').val();
+        if (orcamento) {
+            // Remove R$ e converte vírgula para ponto
+            orcamento = orcamento.replace(/[^\d,]/g, '').replace(',', '.');
+            $('#orcamento').val(orcamento);
+        }
+    });
+    
+    // Formatar valor do orçamento ao carregar a página
+    var orcamentoOriginal = $('#orcamento').val();
+    if (orcamentoOriginal && orcamentoOriginal !== '0') {
+        // Converter de volta para formato brasileiro
+        var valor = parseFloat(orcamentoOriginal);
+        if (!isNaN(valor)) {
+            $('#orcamento').val(valor.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }));
+        }
+    }
+});
+</script>
 </body>
 </html> 

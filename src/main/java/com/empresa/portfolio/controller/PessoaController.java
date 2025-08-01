@@ -16,6 +16,7 @@ import javax.validation.Valid;
 @Controller
 @RequestMapping("/pessoas")
 public class PessoaController {
+
     @Autowired
     private PessoaRepository pessoaRepository;
 
@@ -35,7 +36,6 @@ public class PessoaController {
     public String salvar(@Valid @ModelAttribute Pessoa pessoa, BindingResult result, 
                         Model model, RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
-            // Adiciona mensagens de erro específicas
             StringBuilder erros = new StringBuilder();
             for (FieldError error : result.getFieldErrors()) {
                 erros.append(error.getDefaultMessage()).append("; ");
@@ -70,7 +70,6 @@ public class PessoaController {
     public String atualizar(@PathVariable Long id, @Valid @ModelAttribute Pessoa pessoa, 
                            BindingResult result, Model model, RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
-            // Adiciona mensagens de erro específicas
             StringBuilder erros = new StringBuilder();
             for (FieldError error : result.getFieldErrors()) {
                 erros.append(error.getDefaultMessage()).append("; ");

@@ -1,5 +1,6 @@
 package com.empresa.portfolio.model;
 
+import lombok.Builder;
 import lombok.Data;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -8,6 +9,7 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Table(name = "membro")
 @Data
+@Builder
 public class Membro {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,4 +28,6 @@ public class Membro {
     @NotBlank(message = "Cargo é obrigatório")
     @Column(nullable = false, length = 100)
     private String cargo;
+
+
 } 

@@ -1,5 +1,6 @@
 package com.empresa.portfolio.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -9,6 +10,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "pessoa")
 @Data
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Pessoa {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
