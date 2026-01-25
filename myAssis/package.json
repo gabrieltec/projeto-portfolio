@@ -1,0 +1,25 @@
+{
+  "name": "perssua",
+  "version": "1.0.0",
+  "description": "Assistente de reuniões em tempo real com IA",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --enable-logging"
+  },
+  "keywords": [
+    "meeting",
+    "assistant",
+    "ai",
+    "speech-to-text",
+    "electron"
+  ],
+  "author": "Gabriel",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0"
+  },
+  "dependencies": {
+    "openai": "^4.20.0"
+  }
+}

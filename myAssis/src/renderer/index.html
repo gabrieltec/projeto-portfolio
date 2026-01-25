@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perssua - Assistente de Reuniões</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Barra de título customizada -->
+    <div class="titlebar" id="titlebar">
+      <div class="titlebar-left">
+        <div class="logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="12" cy="12" r="2" fill="currentColor"/>
+          </svg>
+        </div>
+        <span class="app-title">Perssua</span>
+      </div>
+      <div class="titlebar-controls">
+        <button class="control-btn settings-btn" id="settingsBtn" title="Configurações">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+        </button>
+        <button class="control-btn pin-btn" id="pinBtn" title="Sempre no topo">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v10m0 0l-4-4m4 4l4-4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+          </svg>
+        </button>
+        <button class="control-btn" id="minimizeBtn" title="Minimizar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+        <button class="control-btn close-btn" id="closeBtn" title="Fechar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="6" y1="6" x2="18" y2="18"/>
+            <line x1="6" y1="18" x2="18" y2="6"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Configuração inicial -->
+    <div class="setup-panel" id="setupPanel">
+      <div class="setup-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0110 0v4"/>
+        </svg>
+      </div>
+      <h2>Configurar API</h2>
+      <p class="setup-description">Insira sua chave da OpenAI para começar</p>
+      <div class="input-group">
+        <input type="password" id="apiKeyInput" placeholder="sk-..." autocomplete="off">
+        <button class="btn-primary" id="saveApiKey">
+          <span>Conectar</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+      <p class="api-hint">Obtenha sua chave em <a href="#" id="openaiLink">platform.openai.com</a></p>
+    </div>
+
+    <!-- Painel principal -->
+    <div class="main-panel" id="mainPanel" style="display: none;">
+      <!-- Status bar -->
+      <div class="status-bar">
+        <div class="status-indicator" id="statusIndicator">
+          <span class="status-dot"></span>
+          <span class="status-text">Pronto</span>
+        </div>
+        <div class="profile-quick-select" id="profileQuickSelect" title="Clique para mudar perfil">
+          <span class="profile-icon" id="activeProfileIcon">🎯</span>
+          <span class="profile-name" id="activeProfileName">Geral</span>
+        </div>
+        <div class="recording-time" id="recordingTime" style="display: none;">00:00</div>
+      </div>
+
+      <!-- Seletor de Fonte de Áudio -->
+      <div class="audio-source-section">
+        <div class="audio-source-header">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+            <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+          <span>Fonte de Áudio</span>
+        </div>
+        <div class="audio-source-options">
+          <button class="audio-option active" id="optionMic" data-source="microphone" title="Apenas seu microfone">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="2" width="6" height="12" rx="3"/>
+              <path d="M5 10v2a7 7 0 0014 0v-2"/>
+            </svg>
+            <span>Microfone</span>
+          </button>
+          <button class="audio-option" id="optionSystem" data-source="system" title="Áudio do sistema (outros participantes)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="4" y="2" width="16" height="20" rx="2"/>
+              <circle cx="12" cy="14" r="4"/>
+              <line x1="12" y1="6" x2="12" y2="6"/>
+            </svg>
+            <span>Sistema</span>
+          </button>
+          <button class="audio-option" id="optionBoth" data-source="both" title="Microfone + Sistema (recomendado)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M8 2v12a3 3 0 006 0V2"/>
+              <rect x="14" y="6" width="6" height="10" rx="1"/>
+              <path d="M2 10v2a6 6 0 0012 0v-2"/>
+            </svg>
+            <span>Ambos</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Controle principal (compacto) -->
+      <div class="control-section">
+        <button class="record-btn" id="recordBtn">
+          <div class="record-btn-inner">
+            <svg class="mic-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="2" width="6" height="12" rx="3"/>
+              <path d="M5 10v2a7 7 0 0014 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="22"/>
+            </svg>
+            <div class="pulse-ring"></div>
+          </div>
+        </button>
+        <div class="control-info">
+          <p class="record-hint" id="recordHint">Clique para iniciar</p>
+          <span class="recording-time-inline" id="recordingTimeInline" style="display: none;">00:00</span>
+        </div>
+      </div>
+
+      <!-- V4 - Barra de Ferramentas PRÉ/PÓS Reunião -->
+      <div class="v4-toolbar">
+        <button class="v4-tool-btn goal-btn" id="goalBtn" title="🎯 Definir Objetivo">
+          <span class="v4-icon">🎯</span>
+          <span>Objetivo</span>
+        </button>
+        <button class="v4-tool-btn" id="simulationBtn" title="🎭 Simulação">
+          <span class="v4-icon">🎭</span>
+          <span>Simular</span>
+        </button>
+        <button class="v4-tool-btn" id="contextBtn" title="📄 Injetar CV/JD">
+          <span class="v4-icon">📄</span>
+          <span>Contexto</span>
+        </button>
+        <button class="v4-tool-btn" id="englishBtn" title="🌍 English Assist">
+          <span class="v4-icon">🌍</span>
+          <span>English</span>
+        </button>
+        <button class="v4-tool-btn coaching-btn" id="coachingBtn" title="🎓 Coaching" disabled>
+          <span class="v4-icon">🎓</span>
+          <span>Coaching</span>
+        </button>
+      </div>
+
+      <!-- V3 - Barra de Ferramentas Durante Reunião -->
+      <div class="v3-toolbar">
+        <button class="v3-tool-btn" id="screenshotBtn" title="📸 Capturar tela + IA Visual">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span>Screenshot</span>
+        </button>
+        <button class="v3-tool-btn" id="chatBtn" title="💬 Chat com IA">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+          <span>Chat</span>
+        </button>
+        <button class="v3-tool-btn" id="whatToSayBtn" title="🎤 O que dizer agora?">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span>O que dizer?</span>
+        </button>
+        <button class="v3-tool-btn" id="exportBtn" title="📄 Exportar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span>Exportar</span>
+        </button>
+        <button class="v3-tool-btn" id="clientMemoryBtn" title="🧠 Memória de Cliente">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </button>
+        <button class="v3-tool-btn confidential-btn" id="confidentialBtn" title="🔒 Modo Confidencial">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- V3 - Seletor de Persona -->
+      <div class="persona-selector" id="personaSelector">
+        <span class="persona-label">Persona:</span>
+        <select id="personaSelect">
+          <option value="">Auto</option>
+          <option value="engineer">🔧 Engenheiro</option>
+          <option value="salesperson">💼 Vendedor</option>
+          <option value="pm">📊 PM</option>
+          <option value="executive">👔 Executivo</option>
+          <option value="coach">🎯 Coach</option>
+        </select>
+      </div>
+
+      <!-- Transcrição -->
+      <div class="transcript-section">
+        <div class="section-header">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
+            Transcrição
+          </h3>
+          <div class="section-actions">
+            <button class="action-btn" id="copyAllTranscript" title="Copiar tudo">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+              </svg>
+            </button>
+            <button class="action-btn" id="clearTranscript" title="Limpar">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="transcript-box" id="transcriptBox">
+          <p class="placeholder-text">A transcrição aparecerá aqui...</p>
+        </div>
+      </div>
+
+      <!-- Sugestões da IA -->
+      <div class="suggestions-section">
+        <div class="section-header">
+          <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+              <point cx="12" cy="17"/>
+            </svg>
+            Sugestões IA
+          </h3>
+          <div class="section-actions">
+            <button class="action-btn summary-btn" id="generateSummary" title="Gerar Resumo da Reunião">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+            </button>
+            <div class="ai-badge">GPT-4o</div>
+          </div>
+        </div>
+        <div class="suggestions-box" id="suggestionsBox">
+          <div class="suggestion-placeholder">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+            </svg>
+            <p>Inicie a sessão para receber sugestões em tempo real</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Resumo -->
+    <div class="summary-modal" id="summaryModal" style="display: none;">
+      <div class="summary-content">
+        <div class="summary-header">
+          <h2>📋 Resumo da Reunião</h2>
+          <div class="summary-actions">
+            <button class="action-btn" id="copySummary" title="Copiar Resumo">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+              </svg>
+            </button>
+            <button class="close-summary-btn" id="closeSummary">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="summary-body" id="summaryBody">
+          <div class="summary-loading">
+            <div class="loader"></div>
+            <p>Gerando resumo...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- V3 - Modal de Screenshot/Visual -->
+    <div class="v3-modal" id="screenshotModal" style="display: none;">
+      <div class="v3-modal-content">
+        <div class="v3-modal-header">
+          <h2>📸 Análise Visual</h2>
+          <button class="close-modal-btn" id="closeScreenshotModal">×</button>
+        </div>
+        <div class="v3-modal-body">
+          <div class="screenshot-preview" id="screenshotPreview">
+            <p class="placeholder-text">Clique em "Capturar" para tirar um screenshot</p>
+          </div>
+          <div class="screenshot-controls">
+            <input type="text" id="screenshotQuestion" placeholder="Pergunta sobre a imagem (ex: Esse erro é por quê?)">
+            <div class="screenshot-buttons">
+              <button class="btn-secondary" id="captureBtn">📸 Capturar</button>
+              <button class="btn-primary" id="analyzeBtn" disabled>🔍 Analisar com IA</button>
+            </div>
+          </div>
+          <div class="screenshot-result" id="screenshotResult" style="display: none;">
+            <h4>🤖 Análise:</h4>
+            <div class="analysis-text" id="analysisText"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- V3 - Modal de Chat -->
+    <div class="v3-modal" id="chatModal" style="display: none;">
+      <div class="v3-modal-content chat-modal">
+        <div class="v3-modal-header">
+          <h2>💬 Chat com IA</h2>
+          <button class="close-modal-btn" id="closeChatModal">×</button>
+        </div>
+        <div class="v3-modal-body">
+          <div class="chat-messages" id="chatMessages">
+            <div class="chat-hint">
+              <p>💡 Digite para conversar com a IA sem interromper a reunião.</p>
+              <p>A IA considera o contexto da conversa atual.</p>
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Digite sua mensagem...">
+            <button class="btn-primary" id="sendChatBtn">Enviar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- V3 - Modal "O que dizer?" -->
+    <div class="v3-modal" id="whatToSayModal" style="display: none;">
+      <div class="v3-modal-content">
+        <div class="v3-modal-header">
+          <h2>🎤 O que dizer agora?</h2>
+          <button class="close-modal-btn" id="closeWhatToSayModal">×</button>
+        </div>
+        <div class="v3-modal-body">
+          <div class="situation-selector">
+            <p>Qual é a situação?</p>
+            <div class="situation-buttons">
+              <button class="situation-btn" data-situation="silence">😶 Silêncio</button>
+              <button class="situation-btn" data-situation="questioned">❓ Fui questionado</button>
+              <button class="situation-btn" data-situation="stuck">🔄 Reunião travou</button>
+              <button class="situation-btn" data-situation="objection">🚨 Objeção</button>
+              <button class="situation-btn" data-situation="closing">✅ Fechamento</button>
+            </div>
+          </div>
+          <div class="what-to-say-result" id="whatToSayResult" style="display: none;">
+            <div class="suggestion-text" id="whatToSayText"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- V3 - Modal de Exportação -->
+    <div class="v3-modal" id="exportModal" style="display: none;">
+      <div class="v3-modal-content">
+        <div class="v3-modal-header">
+          <h2>📄 Exportar Reunião</h2>
+          <button class="close-modal-btn" id="closeExportModal">×</button>
+        </div>
+        <div class="v3-modal-body">
+          <div class="export-options">
+            <button class="export-option" data-format="markdown">
+              <span class="export-icon">📝</span>
+              <span class="export-label">Markdown</span>
+              <span class="export-desc">Técnico / Dev / Wiki</span>
+            </button>
+            <button class="export-option" data-format="pdf">
+              <span class="export-icon">📄</span>
+              <span class="export-label">PDF/HTML</span>
+              <span class="export-desc">Executivo / Cliente</span>
+            </button>
+          </div>
+          <div class="export-preview" id="exportPreview" style="display: none;">
+            <h4>Prévia:</h4>
+            <textarea id="exportContent" rows="10"></textarea>
+            <button class="btn-primary" id="downloadExport">⬇️ Baixar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- V3 - Modal de Memória de Cliente -->
+    <div class="v3-modal" id="clientMemoryModal" style="display: none;">
+      <div class="v3-modal-content">
+        <div class="v3-modal-header">
+          <h2>🧠 Memória de Cliente</h2>
+          <button class="close-modal-btn" id="closeClientMemoryModal">×</button>
+        </div>
+        <div class="v3-modal-body">
+          <div class="client-selector">
+            <input type="text" id="clientName" placeholder="Nome do cliente/projeto">
+            <button class="btn-secondary" id="loadClientMemory">Carregar</button>
+            <button class="btn-primary" id="newClientMemory">+ Novo</button>
+          </div>
+          <div class="client-notes" id="clientNotes" style="display: none;">
+            <h4>📝 Notas sobre este cliente:</h4>
+            <div class="notes-list" id="notesList"></div>
+            <div class="add-note">
+              <input type="text" id="newNote" placeholder="Adicionar nota...">
+              <button class="btn-primary" id="addNoteBtn">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- V4 - Modal de Objetivo da Reunião -->
+    <div class="v3-modal" id="goalModal" style="display: none;">
+      <div class="v3-modal-content v4-modal-large">
+        <div class="v3-modal-header v4-header">
+          <h2>🎯 Definir Objetivo da Reunião</h2>
+          <button class="close-modal-btn" id="closeGoalModal">×</button>
+        </div>
+        <div class="v3-modal-body">
+          <div class="v4-form">
+            <div class="v4-form-group">
+              <label>🎯 Objetivo Principal</label>
+              <input type="text" id="goalMain" placeholder="Ex: Fechar contrato, Alinhar arquitetura, Passar na entrevista">
+            </div>
+            <div class="v4-form-group">
+              <label>✅ Resultado Desejado</label>
+              <input type="text" id="goalOutcome" placeholder="Ex: Assinatura do contrato, Aprovação do design">
+            </div>
+            <div class="v4-form-group">
+              <label>❌ O que NÃO pode acontecer</label>
+              <input type="text" id="goalAvoid" placeholder="Ex: Perder para concorrente, Parecer despreparado">
+            </div>
+            <div class="v4-form-group">
+              <label>👤 Tipo de Interlocutor</label>
+              <select id="goalInterlocutor">
+                <option value="technical">🔧 Técnico</option>
+                <option value="manager">👔 Gestor/Gerente</option>
+                <option value="hr">🧑‍💼 RH</option>
+                <option value="clevel">👑 C-Level</option>
+                <option value="client">💼 Cliente</option>
+              </select>
+            </div>
+            <button class="btn-primary v4-btn-full" id="saveGoalBtn">🎯 Salvar e Monitorar</button>
+          </div>
+          <div class="v4-goal-status" id="goalStatus" style="display: none;">
+            <h4>📊 Status do Objetivo</h4>
+            <div class="goal-progress">
+              <div class="goal-progress-bar" id="goalProgressBar" style="width: 0%"></div>
+            </div>
+            <p class="goal-percent" id="goalPercent">0%</p>
+            <div class="goal-alert" id="goalAlert" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- V4 - Modal de Simulação -->
+    <div class="v3-modal" id="simulationModal" style="display: none;">
+      <div class="v3-modal-content v4-modal-large">
+        <div class="v3-modal-header v4-header">
+          <h2>🎭 Simulação de Reunião</h2>
+          <button class="close-modal-btn" id="closeSimulationModal">×</button>
+        </div>
+        <div class="v3-modal-body">
+          <!-- Setup da Simulação -->
+          <div class="simulation-setup" id="simulationSetup">
+            <div class="v4-form-group">
+              <label>📋 Tipo de Simulação</label>
+              <select id="simType">
+                <option value="technical_interview">💻 Entrevista Técnica</option>
+                <option value="behavioral_interview">🧠 Entrevista Comportamental</option>
+                <option value="sales">💼 Venda/Apresentação</option>
+                <option value="negotiation">🤝 Negociação</option>
+                <option value="presentation">📊 Pitch/Apresentação</option>
+              </select>
+            </div>
+            <div class="v4-form-group">
+              <label>⚡ Dificuldade</label>
+              <div class="difficulty-selector">
+                <button class="diff-btn" data-diff="junior">🟢 Junior</button>
+                <button class="diff-btn active" data-diff="senior">🟡 Sênior</button>
+                <button class="diff-btn" data-diff="hostile">🔴 Hostil</button>
+                <button class="diff-btn" data-diff="pressuring">⚡ Pressionador</button>
+              </div>
+            </div>
+            <div class="v4-form-group">
+              <label>📝 Contexto Adicional (opcional)</label>
+              <textarea id="simContext" rows="3" placeholder="Ex: Vaga de Senior Dev na empresa X, produto SaaS B2B..."></textarea>
+            </div>
+            <button class="btn-primary v4-btn-full" id="startSimBtn">🎬 Iniciar Simulação</button>
+          </div>
+          
+          <!-- Chat da Simulação -->
+          <div class="simulation-chat" id="simulationChat" style="display: none;">
+            <div class="sim-messages" id="simMessages"></div>
+            <div class="sim-feedback" id="simFeedback" style="display: none;">
+              <span class="feedback-score" id="feedbackScore"></span>
+              <span class="feedback-text" id="feedbackText"></span>
+            </div>
+            <div class="sim-input-area">
+              <input type="text" id="simInput" placeholder="Sua resposta...">
+              <button class="btn-primary" id="sendSimBtn">Enviar</button>
+            </div>
+            <button class="btn-secondary v4-btn-full" id="endSimBtn">🏁 Encerrar e Ver Resultado</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- V4 - Modal de Contexto (CV/JD) -->
+    <div class="v3-modal" id="contextModal" style="display: none;">
+      <div class="v3-modal-content v4-modal-large">
+        <div class="v3-modal-header v4-header">
+          <h2>📄 Injetar Contexto</h2>
+          <button class="close-modal-btn" id="closeContextModal">×</button>
+        </div>
+        <div class="v3-modal-body">
+          <p class="v4-hint">A IA usará essas informações como fonte de verdade para suas respostas.</p>
+          <div class="context-tabs">
+            <button class="context-tab active" data-ctx="cv">📄 Currículo</button>
+            <button class="context-tab" data-ctx="jd">📋 Vaga (JD)</button>
+            <button class="context-tab" data-ctx="company">🏢 Empresa</button>
+            <button class="context-tab" data-ctx="interviewer">👤 Entrevistador</button>
+          </div>
+          <div class="context-content">
+            <textarea id="contextText" rows="10" placeholder="Cole o conteúdo aqui..."></textarea>
+          </div>
+          <div class="context-actions">
+            <button class="btn-secondary" id="clearContextBtn">🗑️ Limpar Tudo</button>
+            <button class="btn-primary" id="saveContextBtn">💾 Salvar Contexto</button>
+          </div>
+          <div class="context-status" id="contextStatus">
+            <span class="ctx-badge" id="cvBadge" style="display:none;">📄 CV</span>
+            <span class="ctx-badge" id="jdBadge" style="display:none;">📋 JD</span>
+            <span class="ctx-badge" id="companyBadge" style="display:none;">🏢 Empresa</span>
+            <span class="ctx-badge" id="interviewerBadge" style="display:none;">👤 Entrevistador</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- V4 - Modal English Assist -->
+    <div class="v3-modal" id="englishModal" style="display: none;">
+      <div class="v3-modal-content">
+        <div class="v3-modal-header v4-header">
+          <h2>🌍 English Assist</h2>
+          <button class="close-modal-btn" id="closeEnglishModal">×</button>
+        </div>
+        <div class="v3-modal-body">
+          <div class="english-tabs">
+            <button class="english-tab active" data-mode="translate">🔄 Traduzir</button>
+            <button class="english-tab" data-mode="speak">🎤 Speak For Me</button>
+          </div>
+          
+          <!-- Modo Traduzir -->
+          <div class="english-content" id="translateContent">
+            <div class="v4-form-group">
+              <label>📝 O que você quer dizer (em português)</label>
+              <textarea id="translateInput" rows="3" placeholder="Digite em português..."></textarea>
+            </div>
+            <div class="translate-mode-selector">
+              <button class="trans-mode-btn" data-mode="literal">📖 Literal</button>
+              <button class="trans-mode-btn active" data-mode="professional">💼 Profissional</button>
+              <button class="trans-mode-btn" data-mode="strategic">🎯 Estratégico</button>
+            </div>
+            <button class="btn-primary v4-btn-full" id="translateBtn">🔄 Traduzir</button>
+            <div class="translate-result" id="translateResult" style="display: none;">
+              <div class="main-translation" id="mainTranslation"></div>
+              <div class="translation-extras" id="translationExtras"></div>
+            </div>
+          </div>
+          
+          <!-- Modo Speak For Me -->
+          <div class="english-content" id="speakContent" style="display: none;">
+            <div class="v4-form-group">
+              <label>💭 O que você quer expressar</label>
+              <textarea id="speakIntent" rows="2" placeholder="Ex: Quero dizer que tenho 5 anos de experiência com React..."></textarea>
+            </div>
+            <div class="v4-form-group">
+              <label>📍 Contexto</label>
+              <select id="speakContext">
+                <option value="interview">🎤 Entrevista</option>
+                <option value="meeting">💼 Reunião</option>
+                <option value="presentation">📊 Apresentação</option>
+                <option value="negotiation">🤝 Negociação</option>
+              </select>
+            </div>
+            <button class="btn-primary v4-btn-full" id="speakBtn">🎤 Gerar Frases</button>
+            <div class="speak-result" id="speakResult" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- V4 - Modal Coaching -->
+    <div class="v3-modal" id="coachingModal" style="display: none;">
+      <div class="v3-modal-content v4-modal-large">
+        <div class="v3-modal-header v4-header">
+          <h2>🎓 Coaching Report</h2>
+          <button class="close-modal-btn" id="closeCoachingModal">×</button>
+        </div>
+        <div class="v3-modal-body">
+          <div class="coaching-loading" id="coachingLoading">
+            <div class="loader"></div>
+            <p>Analisando sua performance...</p>
+          </div>
+          <div class="coaching-report" id="coachingReport" style="display: none;">
+            <div class="coaching-score-circle" id="coachingScore">
+              <span class="score-number">0</span>
+              <span class="score-label">Score</span>
+            </div>
+            <div class="coaching-categories" id="coachingCategories"></div>
+            <div class="coaching-strengths" id="coachingStrengths"></div>
+            <div class="coaching-improve" id="coachingImprove"></div>
+            <div class="coaching-exercise" id="coachingExercise"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+      <div class="loader"></div>
+      <p>Processando...</p>
+    </div>
+
+    <!-- Painel de Configurações -->
+    <div class="settings-panel" id="settingsPanel" style="display: none;">
+      <div class="settings-header">
+        <h2>⚙️ Configurações</h2>
+        <button class="close-settings-btn" id="closeSettings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Tabs -->
+      <div class="settings-tabs">
+        <button class="tab-btn active" data-tab="general">Geral</button>
+        <button class="tab-btn" data-tab="profiles">Perfis</button>
+        <button class="tab-btn" data-tab="history">Histórico</button>
+        <button class="tab-btn" data-tab="shortcuts">Atalhos</button>
+      </div>
+      
+      <!-- Tab: Geral -->
+      <div class="tab-content active" id="tab-general">
+        <div class="setting-group">
+          <label>🔑 Chave API OpenAI</label>
+          <input type="password" id="settingsApiKey" placeholder="sk-...">
+        </div>
+        
+        <div class="setting-row">
+          <div class="setting-group half">
+            <label>🎤 Idioma de Entrada</label>
+            <select id="settingsInputLang">
+              <option value="pt">Português</option>
+              <option value="en">English</option>
+              <option value="es">Español</option>
+            </select>
+          </div>
+          <div class="setting-group half">
+            <label>💬 Idioma de Saída</label>
+            <select id="settingsOutputLang">
+              <option value="pt">Português</option>
+              <option value="en">English</option>
+              <option value="es">Español</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="setting-group">
+          <label>🤖 Modelo GPT</label>
+          <select id="settingsModel">
+            <option value="gpt-4o-mini">GPT-4o Mini (Rápido)</option>
+            <option value="gpt-4o">GPT-4o (Avançado)</option>
+            <option value="gpt-4-turbo">GPT-4 Turbo</option>
+            <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Econômico)</option>
+          </select>
+        </div>
+        
+        <div class="setting-group">
+          <label>🎯 Modo de Assistência</label>
+          <select id="settingsMode">
+            <option value="general">Geral</option>
+            <option value="sales">Vendas</option>
+            <option value="technical">Técnico</option>
+            <option value="interview">Entrevista</option>
+          </select>
+        </div>
+        
+        <div class="setting-group toggle-group">
+          <label>⚡ Sugestão Automática</label>
+          <button class="toggle-btn" id="toggleAutoSuggestion">
+            <span class="toggle-slider"></span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Tab: Perfis (v2.0) -->
+      <div class="tab-content" id="tab-profiles">
+        <p class="shortcuts-info">Escolha um perfil otimizado para seu tipo de reunião.</p>
+        
+        <div class="detected-apps" id="detectedApps" style="display: none;">
+          <span class="detected-label">🔍 Apps detectados:</span>
+          <div class="apps-list" id="appsList"></div>
+        </div>
+        
+        <div class="profiles-grid" id="profilesGrid">
+          <!-- Perfis serão carregados via JS -->
+        </div>
+        
+        <button class="btn-secondary create-profile-btn" id="createProfileBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Criar Perfil Personalizado
+        </button>
+      </div>
+      
+      <!-- Tab: Histórico (v2.0) -->
+      <div class="tab-content" id="tab-history">
+        <div class="history-header">
+          <p class="shortcuts-info">Suas reuniões recentes</p>
+          <div class="feedback-stats" id="feedbackStats">
+            <span class="stat-label">Taxa de utilidade:</span>
+            <span class="stat-value" id="feedbackRate">--</span>
+          </div>
+        </div>
+        
+        <div class="history-list" id="historyList">
+          <p class="empty-history">Nenhuma reunião gravada ainda</p>
+        </div>
+      </div>
+      
+      <!-- Tab: Atalhos -->
+      <div class="tab-content" id="tab-shortcuts">
+        <p class="shortcuts-info">Use os atalhos para controlar o app sem tirar as mãos do teclado.</p>
+        
+        <div class="shortcut-item">
+          <span class="shortcut-label">▶️ Ativar/Pausar</span>
+          <span class="shortcut-key">Ctrl+Shift+1</span>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-label">🔇 Mutar Sugestões</span>
+          <span class="shortcut-key">Ctrl+Shift+2</span>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-label">📌 Fixar Overlay</span>
+          <span class="shortcut-key">Ctrl+Shift+3</span>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-label">🗑️ Limpar Contexto</span>
+          <span class="shortcut-key">Ctrl+Shift+4</span>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-label">⏹️ Encerrar Sessão</span>
+          <span class="shortcut-key">Ctrl+Shift+5</span>
+        </div>
+      </div>
+      
+      <div class="settings-footer">
+        <button class="btn-secondary" id="cancelSettings">Cancelar</button>
+        <button class="btn-primary" id="saveSettingsBtn">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
